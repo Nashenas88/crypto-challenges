@@ -1,0 +1,7 @@
+[package]
+name = "hex_to_64"
+version = "0.1.0"
+authors = ["Paul Faria <Nashenas88@gmail.com>"]
+
+[dependencies]
+itertools = "0.4"
