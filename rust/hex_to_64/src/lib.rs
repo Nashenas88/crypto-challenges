@@ -1,11 +1,10 @@
 extern crate itertools;
 use itertools::Itertools;
 
-pub fn hex_to_base64<'i, I>(bytes: I) -> Box<Iterator<Item=Option<u8>> + 'i>
-    where I: Iterator<Item=u8> + 'i {
+pub fn hex_to_base64<'i, I: Iterator<Item=u8> + 'i>(bytes: I) -> Box<Iterator<Item=Option<u8>> + 'i> {
     Box::new(bytes
         .batching(|it| it.next().map(|x| (x, it.next(), it.next())))
-        .flat_map(|group_of_3| translate(group_of_3)))
+        .flat_map(translate))
 }
 
 struct QuadIterator<T> {
