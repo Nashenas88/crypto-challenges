@@ -1,10 +1,11 @@
+#![feature(conservative_impl_trait)]
 extern crate itertools;
 use itertools::Itertools;
 
-pub fn hex_to_base64<'i, I: Iterator<Item=u8> + 'i>(bytes: I) -> Box<Iterator<Item=Option<u8>> + 'i> {
-    Box::new(bytes
+pub fn hex_to_base64<I: Iterator<Item=u8>>(bytes: I) -> impl Iterator<Item=Option<u8>> {
+    bytes
         .batching(|it| it.next().map(|x| (x, it.next(), it.next())))
-        .flat_map(translate))
+        .flat_map(translate)
 }
 
 struct QuadIterator<T> {
@@ -31,14 +32,14 @@ impl<T> Iterator for QuadIterator<T> where T: Copy {
     }
 }
 
-fn translate(bytes_in: (u8, Option<u8>, Option<u8>)) -> QuadIterator<Option<u8>> {
+fn translate(bytes_in: (u8, Option<u8>, Option<u8>)) -> impl Iterator<Item=Option<u8>> {
+    let mask = 0b0011_1111;
+
     QuadIterator::new([
         Some(bytes_in.0 >> 2),
-        Some((bytes_in.0 << 6 >> 2)
-            + bytes_in.1.map_or(0, |byte| byte >> 4)),
-        bytes_in.1.map(|byte| (byte << 4 >> 2)
-            + bytes_in.2.map_or(0, |byte| byte >> 6)),
-        bytes_in.2.map(|byte| byte << 2 >> 2)
+        Some(((bytes_in.0 << 4) & mask) + bytes_in.1.map_or(0, |byte| byte >> 4)),
+        bytes_in.1.map(|byte| ((byte << 2) & mask) + bytes_in.2.map_or(0, |byte| byte >> 6)),
+        bytes_in.2.map(|byte| byte & mask)
     ])
 }
 
@@ -63,11 +64,11 @@ fn char_to_hex(c: u8) -> u8 {
     }
 }
 
-pub fn hex_str_to_u8_iter<'s>(s: &'s str) -> Box<Iterator<Item=u8> + 's> {
-    Box::new(s.bytes()
-        .map(|c| char_to_hex(c))
+pub fn hex_str_to_u8_iter<'s>(s: &'s str) -> impl Iterator<Item=u8> + 's {
+    s.bytes()
+        .map(char_to_hex)
         .batching(|it| it.next().map(|x| (x, it.next())))
-        .map(|(a, b)| (a << 4) + b.unwrap_or(0)))
+        .map(|(a, b)| (a << 4) + b.unwrap_or(0))
 }
 
 // Tests from here on

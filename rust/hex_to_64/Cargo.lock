@@ -1,0 +1,14 @@
+[root]
+name = "hex_to_64"
+version = "0.1.0"
+dependencies = [
+ "itertools 0.4.18 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "itertools"
+version = "0.4.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum itertools 0.4.18 (registry+https://github.com/rust-lang/crates.io-index)" = "6f15d694e7f7d46ef7a6951db981b33f132472f91d11b5a0f44d3980b87ccbc3"
